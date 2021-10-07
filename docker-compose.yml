@@ -1,0 +1,46 @@
+
+  
+version: '3'
+services:
+  mysql:
+    image: mysql:5.6.27
+    ports:
+      - "127.0.0.1:7060:3306"
+    volumes:
+      - mysqldatgocaching:/var/lib/mysql
+      - ./resource/docker/initdb:/docker-entrypoint-initdb.d  
+    container_name: mysql-gocaching
+    environment:
+      MYSQL_ROOT_PASSWORD: mypass
+      TZ: Asia/Jakarta
+    networks:
+      - gocaching-net
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 7061:8080
+    networks:
+      - gocaching-net
+
+  redis:
+    image: "redis:alpine"
+    command: redis-server --requirepass mypass
+    ports:
+     - "7062:6379"
+    volumes:
+     - $PWD/redis-data:/var/lib/redis
+     - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+     - REDIS_REPLICATION_MODE=master
+    networks:
+      - gocaching-net
+
+volumes:
+  mysqldatgocaching:
+    driver: local
+
+networks:
+  gocaching-net:
+    driver: bridge
